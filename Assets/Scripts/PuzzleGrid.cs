@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,11 +7,19 @@ public class PuzzleGrid : MonoBehaviour {
     [SerializeField] GameObject tilePrefab;
     int gridSize;
     GameObject[,] tiles;
+    int[,] MOVE_DIRECTION;
 
     void Start() {
         gridSize = 4;
         tiles = new GameObject[gridSize, gridSize];
         CreateTiles();
+        MOVE_DIRECTION = new int[,] {
+            {0, -1},
+            {0, 1}, 
+            {-1, 0},
+            {1, 0}
+        };
+        ShufflePuzzle();
     }
 
     // Bottom right tile should always be empty in a correct solution
@@ -42,24 +51,56 @@ public class PuzzleGrid : MonoBehaviour {
                 }
             }
         }
-        if (IsTileEmpty(r + 1, c)) {
-            MoveTile(r, c, r + 1, c);
-        } else if (IsTileEmpty(r - 1, c)) {
-            MoveTile(r, c, r - 1, c);
-        } else if (IsTileEmpty(r, c + 1)) {
-            MoveTile(r, c, r, c + 1);
-        } else if (IsTileEmpty(r, c - 1)) {
-            MoveTile(r, c, r, c - 1);
+        for (int i = 0; i < MOVE_DIRECTION.GetLength(0); i++) {
+            if (IsTileEmpty(r + MOVE_DIRECTION[i, 0], c + MOVE_DIRECTION[i, 1])) {
+                MoveTile(r, c, r + MOVE_DIRECTION[i, 0], c + MOVE_DIRECTION[i, 1]);
+                break;
+            }
         }
         if (IsPuzzleComplete()) {
             Debug.Log("PUZZLE COMPLETED");
         }
     }
 
+    private void ShufflePuzzle() {
+        System.Random random = new System.Random();
+        int shuffleTimes = 20;
+        int emptyR = gridSize - 1;
+        int emptyC = gridSize - 1;
+        for (int i = 0; i < shuffleTimes; i++) {
+            int randomNumber = random.Next(0, 4);
+            int r = emptyR + MOVE_DIRECTION[randomNumber, 0];
+            int c = emptyC + MOVE_DIRECTION[randomNumber, 1];
+            if (IsTileOccupied(r, c)) {
+                MoveTileWithoutVisualChange(r, c, emptyR, emptyC);
+                emptyR = r;
+                emptyC = c;
+                continue;
+            }
+            i--;
+        }
+        UpdateTileVisualPositions();
+    }
+
     private void MoveTile(int r1, int c1, int r2, int c2) {
         tiles[r1, c1].transform.position = new Vector3(c2, -r2, 0);
         tiles[r2, c2] = tiles[r1, c1];
         tiles[r1, c1] = null;
+    }
+
+    private void MoveTileWithoutVisualChange(int r1, int c1, int r2, int c2) {
+        tiles[r2, c2] = tiles[r1, c1];
+        tiles[r1, c1] = null;
+    }
+
+    private void UpdateTileVisualPositions() {
+        for (int i = 0; i < gridSize; i++) {
+            for (int j = 0; j < gridSize; j++) {
+                if (tiles[i, j] != null) {
+                    tiles[i, j].transform.position = new Vector3(j, -i, 0);
+                }
+            }
+        }
     }
 
     private bool IsTileEmpty(int r, int c) {
@@ -69,10 +110,17 @@ public class PuzzleGrid : MonoBehaviour {
         return tiles[r, c] == null;
     }
 
+    private bool IsTileOccupied(int r, int c) {
+        if (r >= gridSize || r < 0 || c >= gridSize || c < 0) {
+            return false;
+        }
+        return tiles[r, c] != null;
+    }
+
     private bool IsPuzzleComplete() {
         for (int i = 0; i < gridSize; i++) {
             for (int j = 0; j < gridSize; j++) {
-                if (tiles[i,j] != null && !IsTileInCorrectSpot(i, j)) {
+                if (tiles[i, j] != null && !IsTileInCorrectSpot(i, j)) {
                     return false;
                 }
             }
