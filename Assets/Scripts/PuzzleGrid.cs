@@ -5,9 +5,13 @@ using UnityEngine;
 
 public class PuzzleGrid : MonoBehaviour {
     [SerializeField] GameObject tilePrefab;
+    [SerializeField] GameObject squarePrefab;
+    [SerializeField] Sprite[] sprites;
     int gridSize;
     GameObject[,] tiles;
     int[,] MOVE_DIRECTION;
+    float xOffset = -5f;
+    float yOffset = 0f;
 
     void Start() {
         gridSize = 4;
@@ -15,7 +19,7 @@ public class PuzzleGrid : MonoBehaviour {
         CreateTiles();
         MOVE_DIRECTION = new int[,] {
             {0, -1},
-            {0, 1}, 
+            {0, 1},
             {-1, 0},
             {1, 0}
         };
@@ -27,16 +31,24 @@ public class PuzzleGrid : MonoBehaviour {
         for (int i = 0; i < gridSize - 1; i++) {
             for (int j = 0; j < gridSize; j++) {
                 CreateTile(i, j);
+                CreateSquare(i, j);
             }
         }
         for (int j = 0; j < gridSize - 1; j++) {
             CreateTile(gridSize - 1, j);
+            CreateSquare(gridSize - 1, j);
         }
     }
 
     private void CreateTile(int i, int j) {
-        tiles[i, j] = Instantiate(tilePrefab, new Vector3(j, -i, 0), Quaternion.identity);
-        tiles[i, j].GetComponentInChildren<ClickableTile>().Init(this, i * gridSize + j);
+        tiles[i, j] = Instantiate(tilePrefab, new Vector3(j + xOffset, -i + yOffset, 0), Quaternion.identity);
+        tiles[i, j].GetComponentInChildren<ClickableTile>().Init(this, i * gridSize + j, false);
+        tiles[i, j].GetComponentInChildren<SpriteRenderer>().sprite = sprites[i * gridSize + j];
+    }
+
+    private void CreateSquare(int i, int j) {
+        GameObject gameObject = Instantiate(squarePrefab, new Vector3(j, -i, 0), Quaternion.identity);
+        gameObject.GetComponent<SpriteRenderer>().sprite = sprites[i * gridSize + j];
     }
 
     public void MoveTile(GameObject tile) {
@@ -83,7 +95,7 @@ public class PuzzleGrid : MonoBehaviour {
     }
 
     private void MoveTile(int r1, int c1, int r2, int c2) {
-        tiles[r1, c1].transform.position = new Vector3(c2, -r2, 0);
+        tiles[r1, c1].transform.position = new Vector3(c2 + xOffset, -r2 + yOffset, 0);
         tiles[r2, c2] = tiles[r1, c1];
         tiles[r1, c1] = null;
     }
@@ -97,7 +109,7 @@ public class PuzzleGrid : MonoBehaviour {
         for (int i = 0; i < gridSize; i++) {
             for (int j = 0; j < gridSize; j++) {
                 if (tiles[i, j] != null) {
-                    tiles[i, j].transform.position = new Vector3(j, -i, 0);
+                    tiles[i, j].transform.position = new Vector3(j + xOffset, -i + yOffset, 0);
                 }
             }
         }

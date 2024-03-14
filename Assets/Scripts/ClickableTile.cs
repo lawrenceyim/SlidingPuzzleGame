@@ -8,11 +8,16 @@ public class ClickableTile : MonoBehaviour {
     int tileNumber;
     TextMeshPro number;
 
-    public void Init(PuzzleGrid puzzleGrid, int tileNumber) {
+    public void Init(PuzzleGrid puzzleGrid, int tileNumber, bool displayNumber) {
         this.puzzleGrid = puzzleGrid;
         this.tileNumber = tileNumber;
         this.number = transform.parent.gameObject.GetComponentInChildren<TextMeshPro>();
-        this.number.text = tileNumber.ToString();
+        if (displayNumber) {
+            this.number.text = tileNumber.ToString();
+        } else {
+            this.number.enabled = false;
+        }
+
     }
 
     public int GetTileNumber() { return tileNumber; }
