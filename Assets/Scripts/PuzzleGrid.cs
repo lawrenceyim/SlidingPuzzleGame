@@ -13,6 +13,7 @@ public class PuzzleGrid : MonoBehaviour {
         CreateTiles();
     }
 
+    // Bottom right tile should always be empty in a correct solution
     private void CreateTiles() {
         for (int i = 0; i < gridSize - 1; i++) {
             for (int j = 0; j < gridSize; j++) {
@@ -43,19 +44,15 @@ public class PuzzleGrid : MonoBehaviour {
         }
         if (IsTileEmpty(r + 1, c)) {
             MoveTile(r, c, r + 1, c);
-            return;
-        }
-        if (IsTileEmpty(r - 1, c)) {
+        } else if (IsTileEmpty(r - 1, c)) {
             MoveTile(r, c, r - 1, c);
-            return;
-        }
-        if (IsTileEmpty(r, c + 1)) {
+        } else if (IsTileEmpty(r, c + 1)) {
             MoveTile(r, c, r, c + 1);
-            return;
-        }
-        if (IsTileEmpty(r, c - 1)) {
+        } else if (IsTileEmpty(r, c - 1)) {
             MoveTile(r, c, r, c - 1);
-            return;
+        }
+        if (IsPuzzleComplete()) {
+            Debug.Log("PUZZLE COMPLETED");
         }
     }
 
@@ -70,6 +67,21 @@ public class PuzzleGrid : MonoBehaviour {
             return false;
         }
         return tiles[r, c] == null;
+    }
+
+    private bool IsPuzzleComplete() {
+        for (int i = 0; i < gridSize; i++) {
+            for (int j = 0; j < gridSize; j++) {
+                if (tiles[i,j] != null && !IsTileInCorrectSpot(i, j)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private bool IsTileInCorrectSpot(int r, int c) {
+        return tiles[r, c].GetComponentInChildren<ClickableTile>().GetTileNumber() == (r * gridSize + c);
     }
 
     private void PrintArray() {

@@ -15,6 +15,8 @@ public class ClickableTile : MonoBehaviour {
         this.number.text = tileNumber.ToString();
     }
 
+    public int GetTileNumber() { return tileNumber; }
+
     private void OnMouseDown() {
         puzzleGrid.MoveTile(this.transform.parent.gameObject);
     }
